@@ -1,0 +1,9 @@
+{
+  "name": "Capri AI",
+  "short_name": "Capri",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#080a16",
+  "theme_color": "#090b18",
+  "icons": []
+}

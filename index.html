@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090b18">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Capri AI">
+<link rel="manifest" href="manifest.json">
+<title>Capri AI</title>
+<style>
+:root{color-scheme:dark;--bg:#080a16;--panel:#11162a;--cyan:#67f3ff;--pink:#fa65c8;--muted:#a6b2ce}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0%,#18274b 0%,#090b18 55%);color:#f4f7ff;font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+main{max-width:720px;margin:auto;padding:env(safe-area-inset-top) 16px calc(24px + env(safe-area-inset-bottom))}
+header{text-align:center;padding:28px 0 18px}.eyebrow{letter-spacing:.28em;color:var(--cyan);font-size:11px}
+h1{font-size:30px;letter-spacing:.12em;margin:8px 0 4px}.sub{color:var(--muted);font-size:13px}
+.orb-wrap{display:flex;justify-content:center;padding:18px 0 22px}.orb{width:142px;height:142px;border-radius:50%;position:relative;background:radial-gradient(circle at 35% 30%,#d5ffff 0 3%,#67f3ff 8%,#4674dc 35%,#772b9b 68%,#10162d 72%);box-shadow:0 0 22px #67f3ff88,0 0 65px #a43dcb55;animation:pulse 3s ease-in-out infinite}.orb:before,.orb:after{content:"";position:absolute;inset:-12px;border:1px solid #67f3ff88;border-radius:50%;transform:rotateX(68deg)}.orb:after{inset:-22px;border-color:#fa65c888;transform:rotateX(68deg) rotate(60deg)}@keyframes pulse{50%{filter:brightness(1.2);transform:scale(1.035)}}
+.status{text-align:center;color:var(--cyan);font-size:13px;margin-top:-8px;min-height:20px}
+.panel{background:#11162add;border:1px solid #344263;border-radius:18px;padding:14px;margin:14px 0;backdrop-filter:blur(10px)}
+.chat{height:32vh;min-height:210px;overflow:auto;display:flex;flex-direction:column;gap:10px}
+.msg{padding:10px 13px;border-radius:14px;max-width:88%;line-height:1.4;font-size:14px;white-space:pre-wrap}.capri{align-self:flex-start;background:#1c2944;border:1px solid #3b7890}.you{align-self:flex-end;background:#38204a;border:1px solid #94549b}
+.controls{display:flex;gap:9px;margin-top:10px}.controls input{min-width:0;flex:1;background:#080d1d;color:white;border:1px solid #405071;border-radius:12px;padding:13px;font-size:16px}.btn{border:1px solid #5b8eaa;background:#15263b;color:#effcff;border-radius:12px;padding:12px 14px;font-weight:600}.btn.primary{background:linear-gradient(135deg,#176d83,#693c8e);border-color:#75efff}.btn:active{transform:scale(.98)}
+.row{display:flex;gap:9px;flex-wrap:wrap}.row .btn{flex:1}.small{font-size:12px;color:var(--muted);line-height:1.45}.section-title{font-size:14px;color:var(--cyan);margin:0 0 9px}.memory{width:100%;min-height:72px;background:#080d1d;color:white;border:1px solid #405071;border-radius:12px;padding:10px;font:14px inherit}.notice{font-size:11px;color:#9ca9c6;margin-top:12px;line-height:1.5}
+</style>
+</head>
+<body><main>
+<header><div class="eyebrow">PERSONAL AI INTERFACE</div><h1>CAPRI AI</h1><div class="sub">Prototype personnel · Français</div></header>
+<div class="orb-wrap"><div class="orb" aria-label="Orbe lumineux Capri"></div></div>
+<div class="status" id="status">En veille · appuie sur le micro pour parler</div>
+<section class="panel chat" id="chat" aria-live="polite">
+<div class="msg capri">Salut. Je suis Capri. Tu peux m’écrire ou essayer de me parler. ✦</div>
+</section>
+<div class="controls">
+<input id="message" placeholder="Écris à Capri…" autocomplete="off">
+<button class="btn primary" id="send">Envoyer</button>
+</div>
+<div class="row" style="margin-top:9px">
+<button class="btn primary" id="mic">🎙 Parler</button>
+<button class="btn" id="speak">🔊 Répéter</button>
+<button class="btn" id="search">⌕ Rechercher sur le Web</button>
+</div>
+<section class="panel">
+<h2 class="section-title">Mémoire locale</h2>
+<textarea class="memory" id="memory" placeholder="Ajoute ici des infos que Capri doit garder en mémoire…"></textarea>
+<div class="row" style="margin-top:9px"><button class="btn" id="save">Enregistrer la mémoire</button><button class="btn" id="clear">Effacer</button></div>
+<p class="small" id="saved">La mémoire est enregistrée uniquement dans ce navigateur sur cet iPhone.</p>
+</section>
+<p class="notice">Prototype gratuit : la voix dépend des fonctions disponibles dans Safari. Cette version ne possède pas encore de véritable moteur d’IA : ses réponses sont limitées. Le bouton Web ouvre une recherche séparée. N’ajoute pas d’informations privées ou sensibles dans la mémoire.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const chat=$('chat'); let lastReply="Salut. Je suis Capri.";
+function add(text,who){const d=document.createElement('div');d.className='msg '+who;d.textContent=text;chat.appendChild(d);chat.scrollTop=chat.scrollHeight;}
+function reply(text){
+ const t=text.toLowerCase(); let r;
+ if(/bonjour|salut|coucou/.test(t)) r="Salut ! Contente de discuter avec toi. Qu’est-ce qu’on fait aujourd’hui ?";
+ else if(/comment tu t'appelles|ton nom/.test(t)) r="Je m’appelle Capri. Enfin, c’est le nom que tu m’as donné pour cette interface.";
+ else if(/mémoire|souviens/.test(t)) r="Tu peux ajouter des informations dans la zone « Mémoire locale ». Elles resteront enregistrées dans ce navigateur.";
+ else if(/heure|date/.test(t)) r="Je n’ai pas encore d’accès direct à l’heure ou à la date. Tu peux utiliser la recherche Web pour vérifier.";
+ else r="Je t’écoute. Cette première version est encore un prototype : elle sait écouter et parler, mais elle n’a pas encore de véritable IA pour comprendre toutes les questions. La mémoire locale est disponible juste en dessous.";
+ lastReply=r; add(r,'capri'); speak(r);
+}
+function send(){const v=$('message').value.trim();if(!v)return;add(v,'you');$('message').value='';reply(v);}
+function speak(text){if(!('speechSynthesis'in window)){$('status').textContent="Synthèse vocale non prise en charge par ce navigateur.";return;}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='fr-FR';u.rate=.94;u.pitch=1.08;const voices=speechSynthesis.getVoices();const fr=voices.find(v=>v.lang.toLowerCase().startsWith('fr'));if(fr)u.voice=fr;speechSynthesis.speak(u);}
+$('send').onclick=send;$('message').addEventListener('keydown',e=>{if(e.key==='Enter')send();});
+$('speak').onclick=()=>speak(lastReply);
+$('search').onclick=()=>{const q=$('message').value.trim()||"actualité";window.open('https://www.google.com/search?q='+encodeURIComponent(q),'_blank','noopener');};
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+$('mic').onclick=()=>{
+ if(!SpeechRecognition){$('status').textContent="La dictée vocale n’est pas disponible dans ce navigateur. Utilise le micro du clavier iPhone.";return;}
+ const rec=new SpeechRecognition();rec.lang='fr-FR';rec.interimResults=false;rec.maxAlternatives=1;
+ $('status').textContent="Je t’écoute…";
+ rec.onresult=e=>{$('message').value=e.results[0][0].transcript;$('status').textContent="Message reconnu";send();};
+ rec.onerror=()=>{$('status').textContent="Micro indisponible. Vérifie l’autorisation Safari.";};
+ rec.onend=()=>{if($('status').textContent==="Je t’écoute…")$('status').textContent="En veille";};
+ try{rec.start();}catch(e){$('status').textContent="Réessaie dans un instant.";}
+};
+$('save').onclick=()=>{localStorage.setItem('capriMemory',$('memory').value);$('saved').textContent="Mémoire enregistrée sur cet appareil.";};
+$('clear').onclick=()=>{if(confirm("Effacer la mémoire enregistrée ?")){$('memory').value='';localStorage.removeItem('capriMemory');$('saved').textContent="Mémoire effacée.";}}
+$('memory').value=localStorage.getItem('capriMemory')||'';
+if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script></body></html>
