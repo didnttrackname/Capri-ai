@@ -2,8 +2,9 @@
   "name": "Capri AI",
   "short_name": "Capri",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#080a16",
-  "theme_color": "#090b18",
-  "icons": []
+  "background_color": "#070914",
+  "theme_color": "#080a16",
+  "description": "Assistant virtuel prototype inspiré de Cyberpunk"
 }
